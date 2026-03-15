@@ -1,16 +1,32 @@
-# React + Vite
+# Finansal Takip Merkezi 💰
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+"Finansal Takip Merkezi", kullanıcıların harcamalarını kolayca yönetebildiği, kategorize edebildiği ve grafiklerle analiz edebildiği modern bir finansal yönetim aracıdır.
 
-Currently, two official plugins are available:
+## 📸 Uygulama Ekran Görüntüsü
+![Finansal Takip Merkezi Ana Ekran](images/finans_proje.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Proje Hakkında
+Bu proje, kişisel bütçe yönetimini dijitalleştirmek amacıyla React ve modern web teknolojileri kullanılarak geliştirilmiştir. Kullanıcılar kendi profillerini oluşturabilir, harcamalarını ekleyebilir ve anlık olarak bütçe durumlarını takip edebilirler.
 
-## React Compiler
+## 🛠 Kullanılan Teknolojiler
+* **React:** Kullanıcı arayüzü ve bileşen yapısı.
+* **Vite:** Hızlı geliştirme ortamı ve derleme aracı.
+* **Tailwind CSS:** Modern ve responsive tasarım.
+* **LocalStorage:** Verilerin tarayıcıda kalıcı olarak saklanması.
+* **Netlify:** Sürekli dağıtım (CI/CD) ve barındırma.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🌟 Temel Özellikler
+* **Kullanıcı Yönetimi:** Birden fazla profil oluşturma ve yönetme.
+* **Harcama Takibi:** Harcama adı ve tutar girerek listeye ekleme.
+* **Dinamik Hesaplama:** Eklenen harcamaların TL ve USD bazında toplamını görüntüleme.
+* **Görsel Analiz:** Harcama dağılımını gösteren interaktif grafikler.
+* **Filtreleme:** Harcamaları günlük, haftalık ve aylık periyotlarda inceleme.
+* **Mobil Uyumluluk:** Her türlü cihazda sorunsuz çalışma.
 
-## Expanding the ESLint configuration
+## 📦 Kurulum
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Projeyi kendi bilgisayarınızda çalıştırmak için şu adımları izleyin:
+
+1. Depoyu klonlayın:
+   ```bash
+   git clone [https://github.com/kadirppkr53/finansal-takip-merkezi.git](https://github.com/kadirppkr53/finansal-takip-merkezi.git)
