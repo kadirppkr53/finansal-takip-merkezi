@@ -23,10 +23,3 @@ Bu proje, kişisel bütçe yönetimini dijitalleştirmek amacıyla React ve mode
 * **Filtreleme:** Harcamaları günlük, haftalık ve aylık periyotlarda inceleme.
 * **Mobil Uyumluluk:** Her türlü cihazda sorunsuz çalışma.
 
-## 📦 Kurulum
-
-Projeyi kendi bilgisayarınızda çalıştırmak için şu adımları izleyin:
-
-1. Depoyu klonlayın:
-   ```bash
-   git clone [https://github.com/kadirppkr53/finansal-takip-merkezi.git](https://github.com/kadirppkr53/finansal-takip-merkezi.git)
