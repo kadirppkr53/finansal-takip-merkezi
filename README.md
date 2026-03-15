@@ -24,14 +24,3 @@ Uygulamanın güncel haline hemen buradan ulaşabilirsiniz:
 * **Harcama Takibi:** Harcama adı ve tutar girerek listeye ekleme.
 * **Dinamik Hesaplama:** Eklenen harcamaların TL ve USD bazında toplamını görüntüleme.
 * **Görsel Analiz:** Harcama dağılımını gösteren interaktif grafikler.
-
-## 📖 Teknik Detaylar
-Projenin mimarisi, veri akışı ve geliştirme süreçleri hakkında daha fazla bilgi almak için [HAKKINDA.md](HAKKINDA.md) dosyasını inceleyebilirsiniz.
-
-## 📦 Kurulum
-
-Projeyi kendi bilgisayarınızda çalıştırmak için şu adımları izleyin:
-
-1. Depoyu klonlayın:
-   ```bash
-   git clone [https://github.com/kadirppkr53/finansal-takip-merkezi.git](https://github.com/kadirppkr53/finansal-takip-merkezi.git)
