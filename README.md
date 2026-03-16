@@ -1,5 +1,7 @@
 # Finansal Takip Merkezi - Proje Detayları
 
+![Finansal Takip Merkezi Ana Ekran](images/finans_proje.png)
+
 ## 🔗 Canlı Demo
 Uygulamanın güncel haline buradan ulaşabilirsiniz:
 👉 [https://delicate-boba-47275e.netlify.app/](https://delicate-boba-47275e.netlify.app/)
@@ -20,8 +22,6 @@ Uygulamanın kalbinde basit ama etkili bir veri döngüsü bulunur:
 * **İşleme:** Form verisi `State` içine alınır ve hesaplamalar yapılır.
 * **Görselleştirme:** İşlenmiş veriler grafik bileşenlerine aktarılarak bütçe durumunuzu özetler.
 
-
-
 ## 🛠 Neden Bu Teknolojiler?
 * **React + Vite:** Hızlı derleme ve kullanıcı dostu geliştirme süreci için tercih edildi.
 * **Tailwind CSS:** Tasarım tutarlılığını sağlamak ve modern arayüzleri hızlıca kurgulamak için seçildi.
@@ -34,8 +34,6 @@ Bu proje, kişisel finans yönetimini herkes için erişilebilir kılma yolculu�
 * **Global Entegrasyon:** Döviz kuru API’leri ile (Exchange Rates API) harcamaları otomatik olarak istenilen para birimine çeviren ve çoklu para birimi desteği sunan bir yapı.
 * **Gelişmiş Raporlama:** Verilerin PDF veya Excel formatında dışa aktarılmasını (Export) sağlayacak araçlar.
 * **Sosyal Hedefler:** Aile üyeleri veya arkadaşlarla ortak bütçe havuzları oluşturma ve bütçe hedeflerini paylaşma.
-
-
 
 ---
 
