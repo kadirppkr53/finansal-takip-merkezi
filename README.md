@@ -1,13 +1,16 @@
-# Finansal Takip Merkezi - Proje Detayları
+# Finansal Takip Merkezi 💰
 
 ![Finansal Takip Merkezi Ana Ekran](images/finans_proje.png)
+
+### 🎯 Hızlı Bakış
+**Finansal Takip Merkezi**, karmaşık finansal tablolardan kurtulmanı sağlayan; harcamalarını saniyeler içinde kaydedip, görsel grafiklerle bütçe disiplinini korumana yardımcı olan modern bir kişisel finans yönetim arayüzüdür.
 
 ## 🔗 Canlı Demo
 Uygulamanın güncel haline buradan ulaşabilirsiniz:
 👉 [https://delicate-boba-47275e.netlify.app/](https://delicate-boba-47275e.netlify.app/)
 
 ## 💡 Projenin Amacı
-Modern dünyada kişisel bütçeyi yönetmek, harcamaları anlık görebilmek ve gelecek planlaması yapmak oldukça kritiktir. Bu uygulama, kullanıcıların karmaşık finansal tablolarla uğraşmadan, saniyeler içinde harcamalarını sisteme girmelerini ve bu harcamaların bütçeleri üzerindeki etkisini görsel olarak analiz etmelerini hedefler.
+Modern dünyada kişisel bütçeyi yönetmek, harcamaları anlık görebilmek ve gelecek planlaması yapmak oldukça kritiktir. Bu uygulama, kullanıcıların karmaşık finansal tablolarla uğraşmadan, harcamalarını sisteme girmelerini ve bu harcamaların bütçeleri üzerindeki etkisini görsel olarak analiz etmelerini hedefler.
 
 ## ⚙️ Teknik Mimari
 Projemiz, modern bir front-end geliştirme süreciyle inşa edilmiştir:
@@ -30,10 +33,10 @@ Uygulamanın kalbinde basit ama etkili bir veri döngüsü bulunur:
 ## 🚀 Gelecek Vizyonu ve Katkı
 Bu proje, kişisel finans yönetimini herkes için erişilebilir kılma yolculuğunda sadece bir başlangıç noktasıdır. Uygulamanın sınırlarını genişletmek ve daha akıllı bir deneyim sunmak için şu fikirler üzerinde çalışılabilir:
 
-* **Finansal Zeka (AI):** Harcama alışkanlıklarını analiz eden ve "Bu ay dışarıda yemek yeme bütçeni aştın, bir sonraki hafta daha dikkatli olmalısın" gibi proaktif önerilerde bulunan bir yapay zeka entegrasyonu.
-* **Global Entegrasyon:** Döviz kuru API’leri ile (Exchange Rates API) harcamaları otomatik olarak istenilen para birimine çeviren ve çoklu para birimi desteği sunan bir yapı.
-* **Gelişmiş Raporlama:** Verilerin PDF veya Excel formatında dışa aktarılmasını (Export) sağlayacak araçlar.
-* **Sosyal Hedefler:** Aile üyeleri veya arkadaşlarla ortak bütçe havuzları oluşturma ve bütçe hedeflerini paylaşma.
+* **Finansal Zeka (AI):** Harcama alışkanlıklarını analiz eden ve proaktif önerilerde bulunan bir yapay zeka entegrasyonu.
+* **Global Entegrasyon:** Döviz kuru API’leri ile çoklu para birimi desteği.
+* **Gelişmiş Raporlama:** Verilerin PDF veya Excel formatında dışa aktarılması.
+* **Sosyal Hedefler:** Aile üyeleri veya arkadaşlarla ortak bütçe havuzları.
 
 ---
 
@@ -42,5 +45,3 @@ Senin de bu projenin bir parçası olmanı çok isterim! Eğer bir fikrin varsa 
 1. **Fork** yap, 
 2. Bir **Branch** oluştur,
 3. Değişikliklerini **Commit** et ve bir **Pull Request** gönder.
-
-Kodunla veya fikirlerinle bu projeyi büyütmene çok değer veriyorum!
