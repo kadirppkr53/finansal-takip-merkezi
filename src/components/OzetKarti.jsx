@@ -1,5 +1,6 @@
 import { LuHash, LuTrendingUp, LuArrowUpRight } from "react-icons/lu";
 import { formatTL, formatUSD } from "../services/api";
+import ButceDurumu from "./ButceDurumu";
 
 function MiniIstatistik({ ikon, etiket, deger }) {
   return (
@@ -15,7 +16,15 @@ function MiniIstatistik({ ikon, etiket, deger }) {
   );
 }
 
-export default function OzetKarti({ kullaniciAdi, baslik, harcamalar, kur }) {
+export default function OzetKarti({
+  kullaniciAdi,
+  baslik,
+  harcamalar,
+  kur,
+  butce,
+  buAyToplam,
+  onButceDegistir,
+}) {
   const toplam = harcamalar.reduce((acc, h) => acc + (Number(h.tutar) || 0), 0);
   const adet = harcamalar.length;
   const ortalama = adet ? toplam / adet : 0;
@@ -58,6 +67,13 @@ export default function OzetKarti({ kullaniciAdi, baslik, harcamalar, kur }) {
             deger={enYuksek ? formatTL(enYuksek.tutar) : "—"}
           />
         </div>
+
+        <ButceDurumu
+          butce={butce}
+          harcanan={buAyToplam}
+          kur={kur}
+          onDegistir={onButceDegistir}
+        />
       </div>
     </section>
   );

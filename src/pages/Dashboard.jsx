@@ -79,20 +79,22 @@ export default function Dashboard() {
     if (seciliId === id) kullaniciSec(null);
   };
 
-  const harcamaKaydet = ({ ad, tutar }) => {
+  const harcamaKaydet = ({ ad, tutar, kategoriId, tarih }) => {
     if (!seciliId) return;
     kullaniciGuncelle(seciliId, (k) => ({
       ...k,
       harcamalar: duzenlenen
         ? k.harcamalar.map((h) =>
-            h.id === duzenlenen.id ? { ...h, ad, tutar } : h,
+            h.id === duzenlenen.id ? { ...h, ad, tutar, kategoriId, tarih } : h,
           )
-        : [
-            ...k.harcamalar,
-            { id: Date.now(), ad, tutar, tarih: new Date().toISOString() },
-          ],
+        : [...k.harcamalar, { id: Date.now(), ad, tutar, kategoriId, tarih }],
     }));
     setDuzenlenen(null);
+  };
+
+  const butceGuncelle = (butce) => {
+    if (!seciliId) return;
+    kullaniciGuncelle(seciliId, (k) => ({ ...k, butce }));
   };
 
   const harcamaSil = (hId) => {
@@ -109,6 +111,16 @@ export default function Dashboard() {
         .slice()
         .sort((a, b) => new Date(b.tarih) - new Date(a.tarih)),
     [seciliKullanici, periyot],
+  );
+
+  // Bütçe, seçili periyottan bağımsız olarak hep bu ayın harcamasıyla kıyaslanır.
+  const buAyToplam = useMemo(
+    () =>
+      filtreleHarcamalar(seciliKullanici?.harcamalar, "aylik").reduce(
+        (acc, h) => acc + (Number(h.tutar) || 0),
+        0,
+      ),
+    [seciliKullanici],
   );
 
   return (
@@ -167,10 +179,14 @@ export default function Dashboard() {
           {seciliKullanici ? (
             <>
               <OzetKarti
+                key={seciliKullanici.id}
                 kullaniciAdi={seciliKullanici.ad}
                 baslik={periyotBasligi(periyot)}
                 harcamalar={gorunenHarcamalar}
                 kur={kur}
+                butce={seciliKullanici.butce}
+                buAyToplam={buAyToplam}
+                onButceDegistir={butceGuncelle}
               />
 
               {/* Harcamalar */}

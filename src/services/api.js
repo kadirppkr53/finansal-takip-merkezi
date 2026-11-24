@@ -103,8 +103,47 @@ export const parseTutar = (ham) => {
     sayiMetni = sayiMetni.replace(/\./g, "").replace(",", ".");
   } else if (sayiMetni.includes(",")) {
     sayiMetni = sayiMetni.replace(",", ".");
+  } else if (/^-?\d{1,3}(\.\d{3})+$/.test(sayiMetni)) {
+    // Yalnızca binlik ayırıcı: "10.000" on bindir, on değil.
+    sayiMetni = sayiMetni.replace(/\./g, "");
   }
 
   const deger = parseFloat(sayiMetni);
   return { deger: Number.isFinite(deger) ? deger : null, dolarMi };
+};
+
+/** Kayıtlı bir tutarı, parseTutar'ın geri okuyabileceği biçimde giriş alanına yazar. */
+export const tutarGirdisi = (n) =>
+  String(Math.round((Number(n) || 0) * 100) / 100).replace(".", ",");
+
+// --- 5. TARİH GİRİŞİ ---
+const ikiHane = (n) => String(n).padStart(2, "0");
+
+/** ISO tarihini <input type="date"> değerine (yerel gün, YYYY-AA-GG) çevirir. */
+export const tarihInputDegeri = (iso) => {
+  const aday = iso ? new Date(iso) : new Date();
+  const t = Number.isNaN(aday.getTime()) ? new Date() : aday;
+  return `${t.getFullYear()}-${ikiHane(t.getMonth() + 1)}-${ikiHane(t.getDate())}`;
+};
+
+/**
+ * Seçilen günü (YYYY-AA-GG) kayıt için ISO tarihine çevirir.
+ * Gün değişmediyse eski saat korunur; bugünse şu anki saat, geçmiş günse öğlen kullanılır.
+ */
+export const tarihOlustur = (gun, eskiIso) => {
+  if (eskiIso && tarihInputDegeri(eskiIso) === gun) return eskiIso;
+  if (gun === tarihInputDegeri()) return new Date().toISOString();
+  const [yil, ay, gunNo] = gun.split("-").map(Number);
+  return new Date(yil, ay - 1, gunNo, 12).toISOString();
+};
+
+/** Bugün dahil, ay sonuna kadar kalan gün sayısı. */
+export const aydaKalanGun = () => {
+  const simdi = new Date();
+  const sonGun = new Date(
+    simdi.getFullYear(),
+    simdi.getMonth() + 1,
+    0,
+  ).getDate();
+  return sonGun - simdi.getDate() + 1;
 };

@@ -205,3 +205,10 @@ export const kategoriBul = (ad = "") => {
     DIGER_KATEGORI
   );
 };
+
+export const TUM_KATEGORILER = [...KATEGORILER, DIGER_KATEGORI];
+
+/** Elle seçilmiş kategori varsa onu, yoksa addan tahmin edileni döndürür. */
+export const harcamaKategorisi = (harcama) =>
+  TUM_KATEGORILER.find((k) => k.id === harcama?.kategoriId) ??
+  kategoriBul(harcama?.ad);

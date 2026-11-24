@@ -1,25 +1,45 @@
 import { useState, useEffect, useRef } from "react";
 import { LuPlus, LuCheck, LuX } from "react-icons/lu";
-import { parseTutar, formatTL } from "../services/api";
+import {
+  parseTutar,
+  formatTL,
+  formatTarih,
+  tutarGirdisi,
+  tarihInputDegeri,
+  tarihOlustur,
+} from "../services/api";
+import { TUM_KATEGORILER, kategoriBul } from "../services/kategoriler";
+
+const EN_ESKI_GUN = "2000-01-01";
 
 export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
   // Not: Dashboard bu bileşeni `key={duzenlenen?.id}` ile render eder;
   // düzenlenen kayıt değişince form sıfırdan kurulur, effect içinde setState gerekmez.
   const [ad, setAd] = useState(duzenlenen?.ad ?? "");
   const [tutar, setTutar] = useState(
-    duzenlenen ? String(duzenlenen.tutar) : "",
+    duzenlenen ? tutarGirdisi(duzenlenen.tutar) : "",
   );
+  // Boş değer "otomatik" demektir: kategori harcama adından tahmin edilir.
+  const [kategoriId, setKategoriId] = useState(duzenlenen?.kategoriId ?? "");
+  const [gun, setGun] = useState(() => tarihInputDegeri(duzenlenen?.tarih));
   const [hata, setHata] = useState("");
   const adRef = useRef(null);
   const tutarRef = useRef(null);
+  const gunRef = useRef(null);
 
   useEffect(() => {
     if (duzenlenen) adRef.current?.focus();
   }, [duzenlenen]);
 
+  const bugun = tarihInputDegeri();
+  const gunGecerli = Boolean(gun) && gun >= EN_ESKI_GUN && gun <= bugun;
+  const gecmisGun = !duzenlenen && gunGecerli && gun !== bugun;
+
   const { deger, dolarMi } = parseTutar(tutar);
-  const onizleme =
-    dolarMi && deger ? `${formatTL(deger * kur)} olarak kaydedilecek` : "";
+  const notlar = [
+    dolarMi && deger ? `${formatTL(deger * kur)} olarak kaydedilecek` : "",
+    gecmisGun ? `Tarih: ${formatTarih(tarihOlustur(gun))}` : "",
+  ].filter(Boolean);
 
   const handleSubmit = (e) => {
     e?.preventDefault();
@@ -35,10 +55,22 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
       tutarRef.current?.focus();
       return;
     }
+    if (!gunGecerli) {
+      setHata("Geçerli bir tarih seçin (gelecek bir tarih olamaz).");
+      gunRef.current?.focus();
+      return;
+    }
 
-    onKaydet({ ad: temizAd, tutar: dolarMi ? deger * kur : deger });
+    onKaydet({
+      ad: temizAd,
+      tutar: dolarMi ? deger * kur : deger,
+      kategoriId: kategoriId || null,
+      tarih: tarihOlustur(gun, duzenlenen?.tarih),
+    });
+    // Tarih bilerek korunur: aynı güne ait harcamalar art arda girilebilir.
     setAd("");
     setTutar("");
+    setKategoriId("");
     setHata("");
     adRef.current?.focus();
   };
@@ -72,6 +104,34 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
           onChange={(e) => setTutar(e.target.value)}
           aria-label="Tutar"
         />
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-2">
+        <select
+          className={`flex-1 min-w-[150px] cursor-pointer ${inputSinifi}`}
+          value={kategoriId}
+          onChange={(e) => setKategoriId(e.target.value)}
+          aria-label="Kategori"
+        >
+          <option value="">Otomatik · {kategoriBul(ad).label}</option>
+          {TUM_KATEGORILER.map((k) => (
+            <option key={k.id} value={k.id}>
+              {k.label}
+            </option>
+          ))}
+        </select>
+        <input
+          ref={gunRef}
+          type="date"
+          className={`flex-1 min-w-[150px] ${inputSinifi} ${
+            gecmisGun ? "border-amber-300 bg-amber-50" : ""
+          }`}
+          value={gun}
+          min={EN_ESKI_GUN}
+          max={bugun}
+          onChange={(e) => setGun(e.target.value)}
+          aria-label="Harcama tarihi"
+        />
         <button
           type="submit"
           className={`flex items-center justify-center gap-2 min-w-[120px] px-5 py-3 rounded-2xl font-bold text-sm text-white transition-all cursor-pointer active:scale-[0.98] ${
@@ -99,8 +159,8 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
       <div className="min-h-5 mt-2 px-1 text-xs">
         {hata ? (
           <span className="text-red-500 font-medium">{hata}</span>
-        ) : onizleme ? (
-          <span className="text-gray-400">{onizleme}</span>
+        ) : notlar.length ? (
+          <span className="text-gray-400">{notlar.join(" · ")}</span>
         ) : null}
       </div>
     </form>

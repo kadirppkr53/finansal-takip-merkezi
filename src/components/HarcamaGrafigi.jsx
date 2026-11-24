@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { kategoriBul } from "../services/kategoriler";
+import { harcamaKategorisi } from "../services/kategoriler";
 import { formatTL } from "../services/api";
 
 export default function HarcamaGrafigi({ harcamalar }) {
   const gruplar = useMemo(() => {
     const toplamlar = {};
     for (const h of harcamalar) {
-      const k = kategoriBul(h.ad);
+      const k = harcamaKategorisi(h);
       toplamlar[k.id] ??= { ...k, deger: 0, adet: 0 };
       toplamlar[k.id].deger += Number(h.tutar) || 0;
       toplamlar[k.id].adet += 1;

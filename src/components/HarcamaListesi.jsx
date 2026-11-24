@@ -1,6 +1,6 @@
 import { LuPencil, LuTrash2 } from "react-icons/lu";
 import { formatTL, formatUSD, formatTarih } from "../services/api";
-import { kategoriBul } from "../services/kategoriler";
+import { harcamaKategorisi } from "../services/kategoriler";
 
 export default function HarcamaListesi({
   harcamalar,
@@ -22,7 +22,7 @@ export default function HarcamaListesi({
   return (
     <ul className="space-y-3">
       {harcamalar.map((h, i) => {
-        const kategori = kategoriBul(h.ad);
+        const kategori = harcamaKategorisi(h);
         const seciliMi = duzenlenenId === h.id;
         return (
           <li
