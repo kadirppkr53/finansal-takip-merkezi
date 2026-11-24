@@ -29,7 +29,8 @@ export default function OzetKarti({
   gelirToplam = 0,
   kur,
   butce,
-  buAyToplam,
+  butceAyToplami,
+  butceAyi,
   onButceDegistir,
 }) {
   const toplam = harcamalar.reduce((acc, h) => acc + (Number(h.tutar) || 0), 0);
@@ -97,7 +98,8 @@ export default function OzetKarti({
 
         <ButceDurumu
           butce={butce}
-          harcanan={buAyToplam}
+          harcanan={butceAyToplami}
+          gecmisAy={butceAyi}
           kur={kur}
           onDegistir={onButceDegistir}
         />

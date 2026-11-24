@@ -34,14 +34,61 @@ export const PERIYOTLAR = [
   { id: "tum", label: "Tümü", baslik: "Tüm Zamanlar" },
 ];
 
-export const periyotBasligi = (id) =>
-  PERIYOTLAR.find((p) => p.id === id)?.baslik ?? "";
+/** Ayları tek bir sayıyla kıyaslamak için: yıl * 12 + ay. */
+const ayIndeksi = (t) => t.getFullYear() * 12 + t.getMonth();
 
-export const filtreleHarcamalar = (harcamalar, periyot) => {
+/** Bu aya göre `ofset` ay ötedeki ayın etiketleri (0 = bu ay, -1 = geçen ay). */
+export const ayBilgisi = (ofset = 0) => {
+  const simdi = new Date();
+  const t = new Date(simdi.getFullYear(), simdi.getMonth() + ofset, 1);
+  return {
+    ofset,
+    indeks: ayIndeksi(t),
+    etiket: t.toLocaleDateString("tr-TR", { month: "long", year: "numeric" }),
+    kisa: t.toLocaleDateString("tr-TR", { month: "short" }),
+  };
+};
+
+export const periyotBasligi = (id, ayOfseti = 0) =>
+  id === "aylik" && ayOfseti !== 0
+    ? ayBilgisi(ayOfseti).etiket
+    : (PERIYOTLAR.find((p) => p.id === id)?.baslik ?? "");
+
+/** En eski kaydın bulunduğu ayın ofseti (kayıt yoksa 0). */
+export const enEskiAyOfseti = (kayitlar) => {
+  const buAy = ayIndeksi(new Date());
+  let enEski = 0;
+  for (const k of kayitlar ?? []) {
+    const t = new Date(k.tarih || Date.now());
+    if (Number.isNaN(t.getTime())) continue;
+    enEski = Math.min(enEski, ayIndeksi(t) - buAy);
+  }
+  return enEski;
+};
+
+/** Son `adet` ayın gider ve gelir toplamları, eskiden yeniye. */
+export const aylikOzet = (kayitlar, adet = 6) => {
+  const aylar = Array.from({ length: adet }, (_, i) => ({
+    ...ayBilgisi(i - adet + 1),
+    gider: 0,
+    gelir: 0,
+  }));
+  const ilk = aylar[0].indeks;
+  for (const k of kayitlar ?? []) {
+    const sira = ayIndeksi(new Date(k.tarih || Date.now())) - ilk;
+    if (!(sira >= 0 && sira < adet)) continue;
+    aylar[sira][k.tur === "gelir" ? "gelir" : "gider"] += Number(k.tutar) || 0;
+  }
+  return aylar;
+};
+
+/** "aylik" periyodunda `ayOfseti` ile geçmiş bir ay seçilebilir. */
+export const filtreleHarcamalar = (harcamalar, periyot, ayOfseti = 0) => {
   if (!harcamalar?.length) return [];
   if (periyot === "tum") return harcamalar;
 
   const simdi = new Date();
+  const hedefAy = ayIndeksi(simdi) + ayOfseti;
   // Not: "simdi" asla mutasyona uğratılmaz; her kıyas için ayrı kopya kullanılır.
   const yediGunOnce = new Date(simdi);
   yediGunOnce.setDate(simdi.getDate() - 7);
@@ -55,10 +102,7 @@ export const filtreleHarcamalar = (harcamalar, periyot) => {
       case "haftalik":
         return tarih >= yediGunOnce;
       case "aylik":
-        return (
-          tarih.getMonth() === simdi.getMonth() &&
-          tarih.getFullYear() === simdi.getFullYear()
-        );
+        return ayIndeksi(tarih) === hedefAy;
       default:
         return true;
     }

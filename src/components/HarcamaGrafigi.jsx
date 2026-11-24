@@ -27,7 +27,11 @@ export default function HarcamaGrafigi({ harcamalar }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
       <div className="relative h-64">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 320, height: 256 }}
+        >
           <PieChart>
             <Pie
               data={gruplar}

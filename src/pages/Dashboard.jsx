@@ -6,12 +6,16 @@ import {
   getDolarKuru,
   filtreleHarcamalar,
   periyotBasligi,
+  ayBilgisi,
+  enEskiAyOfseti,
   VARSAYILAN_KUR,
 } from "../services/api";
 import HarcamaFormu from "../components/HarcamaFormu";
 import HarcamaListesi from "../components/HarcamaListesi";
 import HarcamaGrafigi from "../components/HarcamaGrafigi";
 import FiltreBar from "../components/FiltreBar";
+import AyGezgini from "../components/AyGezgini";
+import AylikTrend from "../components/AylikTrend";
 import KullaniciPaneli from "../components/KullaniciPaneli";
 import OzetKarti from "../components/OzetKarti";
 import VeriPaneli from "../components/VeriPaneli";
@@ -23,6 +27,8 @@ export default function Dashboard() {
     () => getKullanicilar()[0]?.id ?? null,
   );
   const [periyot, setPeriyot] = useState("aylik");
+  // "aylik" periyotta görüntülenen ay: 0 = bu ay, -1 = geçen ay.
+  const [ayOfseti, setAyOfseti] = useState(0);
   const [kur, setKur] = useState(VARSAYILAN_KUR);
   const [kurCanli, setKurCanli] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null);
@@ -62,6 +68,17 @@ export default function Dashboard() {
     setSeciliId(id);
     setDuzenlenen(null);
     setDuzenlemeModu(false);
+    setAyOfseti(0);
+  };
+
+  const periyotDegistir = (yeni) => {
+    setPeriyot(yeni);
+    setAyOfseti(0);
+  };
+
+  const ayaGit = (ofset) => {
+    setPeriyot("aylik");
+    setAyOfseti(Math.min(ofset, 0));
   };
 
   const kullaniciEkle = (ad) => {
@@ -116,10 +133,10 @@ export default function Dashboard() {
   // Seçili periyottaki tüm kayıtlar (gelir + gider), yeniden eskiye.
   const gorunenKayitlar = useMemo(
     () =>
-      filtreleHarcamalar(seciliKullanici?.harcamalar, periyot)
+      filtreleHarcamalar(seciliKullanici?.harcamalar, periyot, ayOfseti)
         .slice()
         .sort((a, b) => new Date(b.tarih) - new Date(a.tarih)),
-    [seciliKullanici, periyot],
+    [seciliKullanici, periyot, ayOfseti],
   );
 
   const gorunenGiderler = useMemo(
@@ -136,14 +153,34 @@ export default function Dashboard() {
     [gorunenKayitlar],
   );
 
-  // Bütçe, seçili periyottan bağımsız olarak hep bu ayın giderleriyle kıyaslanır.
-  const buAyToplam = useMemo(
+  // Bütçe aylıktır: geçmiş bir ay görüntüleniyorsa o ayın, aksi halde bu ayın
+  // giderleriyle kıyaslanır (günlük/haftalık/tümü seçiliyken de bu ay).
+  const butceOfseti = periyot === "aylik" ? ayOfseti : 0;
+  const butceAyToplami = useMemo(
     () =>
-      filtreleHarcamalar(seciliKullanici?.harcamalar, "aylik").reduce(
-        (acc, h) => (gelirMi(h) ? acc : acc + (Number(h.tutar) || 0)),
-        0,
-      ),
+      filtreleHarcamalar(
+        seciliKullanici?.harcamalar,
+        "aylik",
+        butceOfseti,
+      ).reduce((acc, h) => (gelirMi(h) ? acc : acc + (Number(h.tutar) || 0)), 0),
+    [seciliKullanici, butceOfseti],
+  );
+
+  const enEskiOfset = useMemo(
+    () => enEskiAyOfseti(seciliKullanici?.harcamalar),
     [seciliKullanici],
+  );
+
+  const baslik = periyotBasligi(periyot, ayOfseti);
+
+  const veriPaneli = (
+    <VeriPaneli
+      kullanicilar={kullanicilar}
+      seciliKullanici={seciliKullanici}
+      gorunenHarcamalar={gorunenKayitlar}
+      periyotAdi={baslik}
+      onYedekYukle={yedekYukle}
+    />
   );
 
   return (
@@ -195,28 +232,36 @@ export default function Dashboard() {
               onEkle={kullaniciEkle}
               onSil={kullaniciSil}
             />
-            <VeriPaneli
-              kullanicilar={kullanicilar}
-              seciliKullanici={seciliKullanici}
-              gorunenHarcamalar={gorunenKayitlar}
-              periyotAdi={periyotBasligi(periyot)}
-              onYedekYukle={yedekYukle}
-            />
+            {/* Geniş ekranda kenar çubuğunda; dar ekranda içeriğin altında (aşağıda). */}
+            <div className="hidden lg:block">{veriPaneli}</div>
           </div>
         </aside>
 
         <div className="lg:col-span-3 space-y-6">
           {seciliKullanici ? (
             <>
+              {/* Periyot seçimi: aşağıdaki özet, liste ve analizin tamamını kapsar. */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <FiltreBar aktifPeriyot={periyot} onDegistir={periyotDegistir} />
+                {periyot === "aylik" && (
+                  <AyGezgini
+                    ofset={ayOfseti}
+                    enEskiOfset={enEskiOfset}
+                    onDegistir={ayaGit}
+                  />
+                )}
+              </div>
+
               <OzetKarti
                 key={seciliKullanici.id}
                 kullaniciAdi={seciliKullanici.ad}
-                baslik={periyotBasligi(periyot)}
+                baslik={baslik}
                 harcamalar={gorunenGiderler}
                 gelirToplam={gelirToplam}
                 kur={kur}
                 butce={seciliKullanici.butce}
-                buAyToplam={buAyToplam}
+                butceAyToplami={butceAyToplami}
+                butceAyi={butceOfseti ? ayBilgisi(butceOfseti).etiket : null}
                 onButceDegistir={butceGuncelle}
               />
 
@@ -226,8 +271,7 @@ export default function Dashboard() {
                   <div>
                     <h3 className="font-bold text-gray-800">İşlemler</h3>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {gorunenKayitlar.length} kayıt ·{" "}
-                      {periyotBasligi(periyot)}
+                      {gorunenKayitlar.length} kayıt · {baslik}
                     </p>
                   </div>
                   <button
@@ -273,16 +317,28 @@ export default function Dashboard() {
 
               {/* Analiz */}
               <section className="bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-gray-100">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
-                  <div>
-                    <h3 className="font-bold text-gray-800">Harcama Analizi</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Kategorilere göre dağılım
-                    </p>
-                  </div>
-                  <FiltreBar aktifPeriyot={periyot} onDegistir={setPeriyot} />
+                <div className="mb-6">
+                  <h3 className="font-bold text-gray-800">Harcama Analizi</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Kategorilere göre dağılım · {baslik}
+                  </p>
                 </div>
                 <HarcamaGrafigi harcamalar={gorunenGiderler} />
+              </section>
+
+              {/* Aylık trend */}
+              <section className="bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-gray-100">
+                <div className="mb-5">
+                  <h3 className="font-bold text-gray-800">Aylık Trend</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Son 6 ay · bir aya tıklayarak o ayı görüntüle
+                  </p>
+                </div>
+                <AylikTrend
+                  kayitlar={seciliKullanici.harcamalar}
+                  seciliOfset={periyot === "aylik" ? ayOfseti : null}
+                  onAySec={ayaGit}
+                />
               </section>
             </>
           ) : (
@@ -297,6 +353,7 @@ export default function Dashboard() {
               </p>
             </div>
           )}
+          <div className="lg:hidden">{veriPaneli}</div>
         </div>
       </div>
     </div>

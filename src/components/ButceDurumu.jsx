@@ -8,10 +8,16 @@ import {
 } from "../services/api";
 
 /**
- * Aylık bütçe limiti: her zaman içinde bulunulan ayın harcamasıyla kıyaslanır,
- * seçili periyottan bağımsızdır.
+ * Aylık bütçe limiti. `harcanan` bir ayın gider toplamıdır: normalde bu ayın,
+ * geçmiş bir ay görüntüleniyorsa o ayın (`gecmisAy` o ayın etiketidir).
  */
-export default function ButceDurumu({ butce, harcanan, kur, onDegistir }) {
+export default function ButceDurumu({
+  butce,
+  harcanan,
+  gecmisAy,
+  kur,
+  onDegistir,
+}) {
   const [duzenleniyor, setDuzenleniyor] = useState(false);
   const [girdi, setGirdi] = useState("");
   const [hata, setHata] = useState("");
@@ -122,7 +128,7 @@ export default function ButceDurumu({ butce, harcanan, kur, onDegistir }) {
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider font-bold text-blue-100">
           <LuTarget size={12} />
-          Aylık bütçe
+          Aylık bütçe{gecmisAy ? ` · ${gecmisAy}` : ""}
         </span>
         <button
           type="button"
@@ -150,7 +156,7 @@ export default function ButceDurumu({ butce, harcanan, kur, onDegistir }) {
       <div
         className="mt-2 h-2 rounded-full bg-white/20 overflow-hidden"
         role="progressbar"
-        aria-label="Bu ay harcanan bütçe"
+        aria-label="Harcanan bütçe"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.min(yuzde, 100)}
@@ -163,8 +169,10 @@ export default function ButceDurumu({ butce, harcanan, kur, onDegistir }) {
 
       <p className={`mt-2 text-xs font-medium tabular-nums ${vurguRengi}`}>
         {asildi
-          ? `Bu ay limit ${formatTL(-kalan)} aşıldı.`
-          : `Bu ay kalan ${formatTL(kalan)} · ${gun} gün için günde ≈ ${formatTL(kalan / gun)}`}
+          ? `Limit ${formatTL(-kalan)} aşıldı.`
+          : gecmisAy
+            ? `Limitin ${formatTL(kalan)} altında kalındı.`
+            : `Bu ay kalan ${formatTL(kalan)} · ${gun} gün için günde ≈ ${formatTL(kalan / gun)}`}
       </p>
     </div>
   );
