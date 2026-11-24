@@ -1,4 +1,4 @@
-import { LuPencil, LuTrash2 } from "react-icons/lu";
+import { LuPencil, LuTrash2, LuRepeat } from "react-icons/lu";
 import { formatTL, formatUSD, formatTarih } from "../services/api";
 import { harcamaKategorisi, gelirMi } from "../services/kategoriler";
 
@@ -44,8 +44,16 @@ export default function HarcamaListesi({
                 <kategori.Icon size={22} style={{ color: kategori.renk }} />
               </div>
               <div className="min-w-0">
-                <span className="font-semibold text-gray-800 block truncate">
-                  {h.ad}
+                <span className="flex items-center gap-1.5 font-semibold text-gray-800">
+                  <span className="truncate">{h.ad}</span>
+                  {h.tekrarId != null && (
+                    <LuRepeat
+                      size={12}
+                      className="text-gray-400 shrink-0"
+                      aria-label="Tekrarlayan kayıt"
+                      title="Tekrarlayan kayıt"
+                    />
+                  )}
                 </span>
                 <span className="text-[11px] text-gray-400 font-medium">
                   {kategori.label} · {formatTarih(h.tarih)}

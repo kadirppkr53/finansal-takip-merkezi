@@ -19,10 +19,15 @@ import AylikTrend from "../components/AylikTrend";
 import KullaniciPaneli from "../components/KullaniciPaneli";
 import OzetKarti from "../components/OzetKarti";
 import VeriPaneli from "../components/VeriPaneli";
+import TekrarListesi from "../components/TekrarListesi";
 import { gelirMi } from "../services/kategoriler";
+import { tekrarOlustur, tekrarlariIsle } from "../services/tekrar";
 
 export default function Dashboard() {
-  const [kullanicilar, setKullanicilar] = useState(getKullanicilar);
+  // Açılışta günü gelmiş tekrarlayan kalemler kayda dönüştürülür.
+  const [kullanicilar, setKullanicilar] = useState(() =>
+    tekrarlariIsle(getKullanicilar()),
+  );
   const [seciliId, setSeciliId] = useState(
     () => getKullanicilar()[0]?.id ?? null,
   );
@@ -54,6 +59,15 @@ export default function Dashboard() {
   useEffect(() => {
     saveKullanicilar(kullanicilar);
   }, [kullanicilar]);
+
+  // Sekme açık kalıp gün değiştiyse, geri dönüldüğünde tekrarlar yeniden işlenir.
+  useEffect(() => {
+    const kontrol = () => {
+      if (!document.hidden) setKullanicilar((onceki) => tekrarlariIsle(onceki));
+    };
+    document.addEventListener("visibilitychange", kontrol);
+    return () => document.removeEventListener("visibilitychange", kontrol);
+  }, []);
 
   // Seçili kullanıcı türetilir; ayrı bir kopya tutulmaz.
   const seciliKullanici =
@@ -98,22 +112,47 @@ export default function Dashboard() {
     if (seciliId === id) kullaniciSec(null);
   };
 
-  const harcamaKaydet = ({ tur, ad, tutar, kategoriId, tarih }) => {
-    const alanlar = { tur, ad, tutar, kategoriId, tarih };
+  const harcamaKaydet = ({ tekrarla, ...alanlar }) => {
     if (!seciliId) return;
-    kullaniciGuncelle(seciliId, (k) => ({
-      ...k,
-      harcamalar: duzenlenen
-        ? k.harcamalar.map((h) =>
+    const id = Date.now();
+    const kural = tekrarla ? tekrarOlustur(alanlar, `t${id}`) : null;
+
+    kullaniciGuncelle(seciliId, (k) => {
+      if (duzenlenen)
+        return {
+          ...k,
+          harcamalar: k.harcamalar.map((h) =>
             h.id === duzenlenen.id ? { ...h, ...alanlar } : h,
-          )
-        : [...k.harcamalar, { id: Date.now(), ...alanlar }],
-    }));
+          ),
+        };
+      if (!kural)
+        return { ...k, harcamalar: [...k.harcamalar, { id, ...alanlar }] };
+
+      // İlk kayıt geçmiş bir aya girildiyse aradaki aylar da hemen doldurulur.
+      return tekrarlariIsle([
+        {
+          ...k,
+          tekrarlar: [...(k.tekrarlar ?? []), kural],
+          harcamalar: [...k.harcamalar, { id, ...alanlar, tekrarId: kural.id }],
+        },
+      ])[0];
+    });
     setDuzenlenen(null);
   };
 
+  const tekrarSil = (kural) => {
+    const onay = window.confirm(
+      `"${kural.ad}" artık her ay otomatik eklenmeyecek. Daha önce eklenen kayıtlar silinmez. Devam edilsin mi?`,
+    );
+    if (!onay) return;
+    kullaniciGuncelle(seciliId, (k) => ({
+      ...k,
+      tekrarlar: (k.tekrarlar ?? []).filter((t) => t.id !== kural.id),
+    }));
+  };
+
   const yedekYukle = (yeniKullanicilar) => {
-    setKullanicilar(yeniKullanicilar);
+    setKullanicilar(tekrarlariIsle(yeniKullanicilar));
     kullaniciSec(yeniKullanicilar[0]?.id ?? null);
   };
 
@@ -314,6 +353,13 @@ export default function Dashboard() {
                   isReadOnly={!duzenlemeModu}
                 />
               </section>
+
+              {seciliKullanici.tekrarlar?.length > 0 && (
+                <TekrarListesi
+                  tekrarlar={seciliKullanici.tekrarlar}
+                  onSil={tekrarSil}
+                />
+              )}
 
               {/* Analiz */}
               <section className="bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-gray-100">

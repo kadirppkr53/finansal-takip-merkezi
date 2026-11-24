@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { LuPlus, LuCheck, LuX } from "react-icons/lu";
+import { LuPlus, LuCheck, LuX, LuRepeat } from "react-icons/lu";
 import {
   parseTutar,
   formatTL,
@@ -30,6 +30,7 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
   // Boş değer "otomatik" demektir: kategori harcama adından tahmin edilir.
   const [kategoriId, setKategoriId] = useState(duzenlenen?.kategoriId ?? "");
   const [gun, setGun] = useState(() => tarihInputDegeri(duzenlenen?.tarih));
+  const [tekrarla, setTekrarla] = useState(false);
   const [hata, setHata] = useState("");
   const adRef = useRef(null);
   const tutarRef = useRef(null);
@@ -54,6 +55,9 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
   const notlar = [
     dolarMi && deger ? `${formatTL(deger * kur)} olarak kaydedilecek` : "",
     gecmisGun ? `Tarih: ${formatTarih(tarihOlustur(gun))}` : "",
+    tekrarla && gunGecerli && Number(gun.slice(8)) > 28
+      ? "Kısa aylarda ayın son günü kullanılır"
+      : "",
   ].filter(Boolean);
 
   const handleSubmit = (e) => {
@@ -82,11 +86,13 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
       tutar: dolarMi ? deger * kur : deger,
       kategoriId: kategoriId || null,
       tarih: tarihOlustur(gun, duzenlenen?.tarih),
+      tekrarla: !duzenlenen && tekrarla,
     });
     // Tarih ve tür bilerek korunur: aynı güne ait kayıtlar art arda girilebilir.
     setAd("");
     setTutar("");
     setKategoriId("");
+    setTekrarla(false);
     setHata("");
     adRef.current?.focus();
   };
@@ -198,6 +204,23 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
           </button>
         )}
       </div>
+
+      {/* Tekrar yalnızca yeni kayıtta kurulur; mevcut kurallar listeden kaldırılır. */}
+      {!duzenlenen && (
+        <label className="inline-flex items-center gap-2 mt-3 px-1 text-xs font-semibold text-gray-500 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={tekrarla}
+            onChange={(e) => setTekrarla(e.target.checked)}
+            className="w-4 h-4 accent-blue-600 cursor-pointer"
+          />
+          <LuRepeat size={13} />
+          Her ay tekrarla
+          <span className="font-medium text-gray-400">
+            (kira, fatura, abonelik, maaş…)
+          </span>
+        </label>
+      )}
 
       <div className="min-h-5 mt-2 px-1 text-xs">
         {hata ? (

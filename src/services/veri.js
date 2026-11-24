@@ -47,6 +47,27 @@ const temizHarcama = (h, kimlik) => {
       ? new Date().toISOString()
       : tarih.toISOString(),
     kategoriId: typeof h.kategoriId === "string" ? h.kategoriId : null,
+    ...(idGecerli(h.tekrarId) ? { tekrarId: h.tekrarId } : {}),
+  };
+};
+
+const temizTekrar = (t, kimlik) => {
+  if (!t || typeof t !== "object") return null;
+  const ad = typeof t.ad === "string" ? t.ad.trim() : "";
+  const tutar = Number(t.tutar);
+  const gun = Number(t.gun);
+  const sonAy = Number(t.sonAy);
+  if (!ad || !Number.isFinite(tutar) || tutar <= 0) return null;
+  if (!Number.isInteger(gun) || gun < 1 || gun > 31) return null;
+  if (!Number.isInteger(sonAy)) return null;
+  return {
+    id: kimlik(t.id),
+    tur: t.tur === "gelir" ? "gelir" : "gider",
+    ad,
+    tutar,
+    kategoriId: typeof t.kategoriId === "string" ? t.kategoriId : null,
+    gun,
+    sonAy,
   };
 };
 
@@ -55,6 +76,7 @@ const temizKullanici = (k, kimlik) => {
   const ad = typeof k.ad === "string" ? k.ad.trim() : "";
   if (!ad) return null;
   const harcamaKimligi = kimlikVerici();
+  const tekrarKimligi = kimlikVerici();
   const butce = Number(k.butce);
   return {
     id: kimlik(k.id),
@@ -62,6 +84,9 @@ const temizKullanici = (k, kimlik) => {
     butce: Number.isFinite(butce) && butce > 0 ? butce : null,
     harcamalar: (Array.isArray(k.harcamalar) ? k.harcamalar : [])
       .map((h) => temizHarcama(h, harcamaKimligi))
+      .filter(Boolean),
+    tekrarlar: (Array.isArray(k.tekrarlar) ? k.tekrarlar : [])
+      .map((t) => temizTekrar(t, tekrarKimligi))
       .filter(Boolean),
   };
 };
