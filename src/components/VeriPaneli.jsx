@@ -15,6 +15,8 @@ import {
 } from "../services/veri";
 
 const EN_BUYUK_YEDEK = 5 * 1024 * 1024;
+// Excel'in Türkçe karakterleri doğru okuması için dosyanın başına eklenir.
+const BOM = String.fromCharCode(0xfeff);
 
 export default function VeriPaneli({
   kullanicilar,
@@ -48,10 +50,9 @@ export default function VeriPaneli({
       dosyaAdiParcasi(periyotAdi),
       tarihInputDegeri(),
     ].join("-");
-    // BOM: Excel'in Türkçe karakterleri doğru okuması için.
     dosyaIndir(
       `${ad}.csv`,
-      `﻿${csvOlustur(gorunenHarcamalar)}`,
+      BOM + csvOlustur(gorunenHarcamalar),
       "text/csv;charset=utf-8",
     );
     setDurum({
