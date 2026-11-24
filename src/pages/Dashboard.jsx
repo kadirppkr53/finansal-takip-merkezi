@@ -14,6 +14,7 @@ import HarcamaGrafigi from "../components/HarcamaGrafigi";
 import FiltreBar from "../components/FiltreBar";
 import KullaniciPaneli from "../components/KullaniciPaneli";
 import OzetKarti from "../components/OzetKarti";
+import VeriPaneli from "../components/VeriPaneli";
 
 export default function Dashboard() {
   const [kullanicilar, setKullanicilar] = useState(getKullanicilar);
@@ -92,6 +93,11 @@ export default function Dashboard() {
     setDuzenlenen(null);
   };
 
+  const yedekYukle = (yeniKullanicilar) => {
+    setKullanicilar(yeniKullanicilar);
+    kullaniciSec(yeniKullanicilar[0]?.id ?? null);
+  };
+
   const butceGuncelle = (butce) => {
     if (!seciliId) return;
     kullaniciGuncelle(seciliId, (k) => ({ ...k, butce }));
@@ -164,13 +170,20 @@ export default function Dashboard() {
       {/* Ana Grid */}
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside className="lg:col-span-1">
-          <div className="lg:sticky lg:top-6">
+          <div className="lg:sticky lg:top-6 space-y-6">
             <KullaniciPaneli
               kullanicilar={kullanicilar}
               seciliId={seciliId}
               onSec={kullaniciSec}
               onEkle={kullaniciEkle}
               onSil={kullaniciSil}
+            />
+            <VeriPaneli
+              kullanicilar={kullanicilar}
+              seciliKullanici={seciliKullanici}
+              gorunenHarcamalar={gorunenHarcamalar}
+              periyotAdi={periyotBasligi(periyot)}
+              onYedekYukle={yedekYukle}
             />
           </div>
         </aside>
