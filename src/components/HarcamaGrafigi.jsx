@@ -3,7 +3,15 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { harcamaKategorisi } from "../services/kategoriler";
 import { formatTL } from "../services/api";
 
-export default function HarcamaGrafigi({ harcamalar }) {
+/**
+ * Kategori dağılımı. Bir dilime ya da satıra tıklamak o kategoriyi seçer
+ * (tekrar tıklamak seçimi kaldırır); seçim varken diğerleri soluklaşır.
+ */
+export default function HarcamaGrafigi({
+  harcamalar,
+  seciliKategori = "",
+  onKategoriSec,
+}) {
   const gruplar = useMemo(() => {
     const toplamlar = {};
     for (const h of harcamalar) {
@@ -16,6 +24,11 @@ export default function HarcamaGrafigi({ harcamalar }) {
   }, [harcamalar]);
 
   const toplam = gruplar.reduce((acc, g) => acc + g.deger, 0);
+  // Seçili kategori bu periyotta yoksa hiçbir şey soluklaştırılmaz.
+  const secim = gruplar.some((g) => g.id === seciliKategori)
+    ? seciliKategori
+    : "";
+  const soluk = (id) => Boolean(secim) && secim !== id;
 
   if (!toplam)
     return (
@@ -42,9 +55,15 @@ export default function HarcamaGrafigi({ harcamalar }) {
               paddingAngle={gruplar.length > 1 ? 3 : 0}
               stroke="none"
               animationDuration={600}
+              onClick={(_, sira) => onKategoriSec?.(gruplar[sira]?.id)}
+              className="cursor-pointer"
             >
               {gruplar.map((g) => (
-                <Cell key={g.id} fill={g.renk} />
+                <Cell
+                  key={g.id}
+                  fill={g.renk}
+                  fillOpacity={soluk(g.id) ? 0.25 : 1}
+                />
               ))}
             </Pie>
             <Tooltip
@@ -76,6 +95,19 @@ export default function HarcamaGrafigi({ harcamalar }) {
           const yuzde = (g.deger / toplam) * 100;
           return (
             <li key={g.id}>
+              <button
+                type="button"
+                onClick={() => onKategoriSec?.(g.id)}
+                aria-pressed={secim === g.id}
+                title={
+                  secim === g.id
+                    ? "Süzgeci kaldır"
+                    : `Listeyi ${g.label} kategorisine süz`
+                }
+                className={`block w-full text-left p-2 -m-2 rounded-xl transition-all cursor-pointer hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-blue-400 ${
+                  secim === g.id ? "bg-gray-50" : ""
+                } ${soluk(g.id) ? "opacity-40" : ""}`}
+              >
               <div className="flex items-center justify-between text-sm mb-1.5 gap-2">
                 <span className="flex items-center gap-2 font-semibold text-gray-700 min-w-0">
                   <g.Icon size={15} style={{ color: g.renk }} />
@@ -97,6 +129,7 @@ export default function HarcamaGrafigi({ harcamalar }) {
                   style={{ width: `${yuzde}%`, backgroundColor: g.renk }}
                 />
               </div>
+              </button>
             </li>
           );
         })}

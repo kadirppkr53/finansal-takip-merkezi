@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { LuCircleDollarSign, LuPencil, LuCheck } from "react-icons/lu";
 import {
   getKullanicilar,
@@ -20,7 +20,8 @@ import KullaniciPaneli from "../components/KullaniciPaneli";
 import OzetKarti from "../components/OzetKarti";
 import VeriPaneli from "../components/VeriPaneli";
 import TekrarListesi from "../components/TekrarListesi";
-import { gelirMi } from "../services/kategoriler";
+import ListeFiltresi from "../components/ListeFiltresi";
+import { gelirMi, harcamaKategorisi } from "../services/kategoriler";
 import { tekrarOlustur, tekrarlariIsle } from "../services/tekrar";
 
 export default function Dashboard() {
@@ -38,6 +39,10 @@ export default function Dashboard() {
   const [kurCanli, setKurCanli] = useState(false);
   const [duzenlenen, setDuzenlenen] = useState(null);
   const [duzenlemeModu, setDuzenlemeModu] = useState(false);
+  // İşlem listesine özel süzgeçler (özet ve grafikler periyodun tamamını gösterir).
+  const [arama, setArama] = useState("");
+  const [kategoriFiltre, setKategoriFiltre] = useState("");
+  const islemlerRef = useRef(null);
 
   // Dolar kuru tek bir yerden, bir kez çekilir.
   useEffect(() => {
@@ -83,6 +88,8 @@ export default function Dashboard() {
     setDuzenlenen(null);
     setDuzenlemeModu(false);
     setAyOfseti(0);
+    setArama("");
+    setKategoriFiltre("");
   };
 
   const periyotDegistir = (yeni) => {
@@ -183,6 +190,42 @@ export default function Dashboard() {
     [gorunenKayitlar],
   );
 
+  // Listede seçilebilecek kategoriler: yalnızca bu periyotta kaydı olanlar.
+  const gorunenKategoriler = useMemo(() => {
+    const bulunan = new Map();
+    for (const h of gorunenKayitlar) {
+      const k = harcamaKategorisi(h);
+      if (!bulunan.has(k.id)) bulunan.set(k.id, k);
+    }
+    return [...bulunan.values()].sort((a, b) =>
+      a.label.localeCompare(b.label, "tr"),
+    );
+  }, [gorunenKayitlar]);
+
+  const listeKayitlari = useMemo(() => {
+    const aranan = arama.trim().toLocaleLowerCase("tr-TR");
+    if (!aranan && !kategoriFiltre) return gorunenKayitlar;
+    return gorunenKayitlar.filter((h) => {
+      const kategori = harcamaKategorisi(h);
+      if (kategoriFiltre && kategori.id !== kategoriFiltre) return false;
+      return (
+        !aranan ||
+        h.ad.toLocaleLowerCase("tr-TR").includes(aranan) ||
+        kategori.label.toLocaleLowerCase("tr-TR").includes(aranan)
+      );
+    });
+  }, [gorunenKayitlar, arama, kategoriFiltre]);
+
+  const filtreAktif = listeKayitlari !== gorunenKayitlar;
+
+  // Grafikten kategori seçilince liste o kategoriye süzülür ve görünür alana kaydırılır.
+  const grafiktenKategoriSec = (id) => {
+    const yeni = kategoriFiltre === id ? "" : id;
+    setKategoriFiltre(yeni);
+    if (yeni)
+      islemlerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const gelirToplam = useMemo(
     () =>
       gorunenKayitlar.reduce(
@@ -216,7 +259,7 @@ export default function Dashboard() {
     <VeriPaneli
       kullanicilar={kullanicilar}
       seciliKullanici={seciliKullanici}
-      gorunenHarcamalar={gorunenKayitlar}
+      gorunenHarcamalar={listeKayitlari}
       periyotAdi={baslik}
       onYedekYukle={yedekYukle}
     />
@@ -305,11 +348,15 @@ export default function Dashboard() {
               />
 
               {/* İşlemler (gelir + gider) */}
-              <section className="bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-gray-100">
+              <section
+                ref={islemlerRef}
+                className="scroll-mt-6 bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-gray-100"
+              >
                 <div className="flex items-center justify-between gap-4 mb-5">
                   <div>
                     <h3 className="font-bold text-gray-800">İşlemler</h3>
                     <p className="text-xs text-gray-400 mt-0.5">
+                      {filtreAktif ? `${listeKayitlari.length} / ` : ""}
                       {gorunenKayitlar.length} kayıt · {baslik}
                     </p>
                   </div>
@@ -344,8 +391,27 @@ export default function Dashboard() {
                   />
                 )}
 
+                {gorunenKayitlar.length > 0 && (
+                  <ListeFiltresi
+                    arama={arama}
+                    onAramaDegistir={setArama}
+                    kategoriId={
+                      gorunenKategoriler.some((k) => k.id === kategoriFiltre)
+                        ? kategoriFiltre
+                        : ""
+                    }
+                    onKategoriDegistir={setKategoriFiltre}
+                    kategoriler={gorunenKategoriler}
+                  />
+                )}
+
                 <HarcamaListesi
-                  harcamalar={gorunenKayitlar}
+                  harcamalar={listeKayitlari}
+                  bosMesaj={
+                    filtreAktif && gorunenKayitlar.length > 0
+                      ? "Aramanıza uyan kayıt bulunamadı."
+                      : undefined
+                  }
                   onSil={harcamaSil}
                   onDuzenle={setDuzenlenen}
                   duzenlenenId={duzenlenen?.id}
@@ -366,10 +432,15 @@ export default function Dashboard() {
                 <div className="mb-6">
                   <h3 className="font-bold text-gray-800">Harcama Analizi</h3>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    Kategorilere göre dağılım · {baslik}
+                    Kategorilere göre dağılım · {baslik} · listeyi süzmek için bir
+                    kategoriye tıkla
                   </p>
                 </div>
-                <HarcamaGrafigi harcamalar={gorunenGiderler} />
+                <HarcamaGrafigi
+                  harcamalar={gorunenGiderler}
+                  seciliKategori={kategoriFiltre}
+                  onKategoriSec={grafiktenKategoriSec}
+                />
               </section>
 
               {/* Aylık trend */}

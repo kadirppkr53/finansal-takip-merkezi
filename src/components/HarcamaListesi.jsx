@@ -9,13 +9,12 @@ export default function HarcamaListesi({
   kur,
   isReadOnly,
   duzenlenenId,
+  bosMesaj = "Bu periyotta henüz bir kayıt yok.",
 }) {
   if (!harcamalar?.length)
     return (
       <div className="text-center py-12 border-2 border-dashed border-gray-100 rounded-3xl">
-        <p className="text-gray-400 text-sm">
-          Bu periyotta henüz bir kayıt yok.
-        </p>
+        <p className="text-gray-400 text-sm">{bosMesaj}</p>
       </div>
     );
 
