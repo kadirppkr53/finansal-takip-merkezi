@@ -8,3 +8,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <App />
   </React.StrictMode>,
 );
+
+// Çevrimdışı çalışma: yalnızca yayındaki sürümde etkin (geliştirmede önbellek
+// eski dosyaları göstermesin).
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Kayıt başarısız olursa uygulama çevrimiçi olarak çalışmaya devam eder.
+    });
+  });
+}
