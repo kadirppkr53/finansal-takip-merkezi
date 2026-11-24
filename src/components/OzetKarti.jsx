@@ -42,7 +42,7 @@ export default function OzetKarti({
   );
 
   return (
-    <section className="relative overflow-hidden bg-linear-to-br from-blue-600 via-blue-600 to-indigo-700 text-white p-6 md:p-8 rounded-[2rem] shadow-xl shadow-blue-200">
+    <section className="tema-sabit relative overflow-hidden bg-linear-to-br from-blue-600 via-blue-600 to-indigo-700 text-white p-6 md:p-8 rounded-[2rem] shadow-xl shadow-blue-200">
       {/* Dekoratif daireler */}
       <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10" />
       <div className="pointer-events-none absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-white/5" />

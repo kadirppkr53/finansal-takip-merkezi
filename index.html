@@ -16,6 +16,23 @@
       rel="stylesheet"
     />
     <title>Finansal Takip Merkezi</title>
+    <!-- Tema, sayfa çizilmeden önce uygulanır (açılışta beyaz parlama olmasın). -->
+    <script>
+      (function () {
+        try {
+          var tema = localStorage.getItem("tema");
+          var koyu =
+            tema === "koyu" ||
+            (!tema && matchMedia("(prefers-color-scheme: dark)").matches);
+          if (koyu) {
+            document.documentElement.classList.add("dark");
+            document
+              .querySelector('meta[name="theme-color"]')
+              .setAttribute("content", "#0f172a");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

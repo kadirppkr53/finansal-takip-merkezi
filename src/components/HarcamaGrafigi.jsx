@@ -70,10 +70,12 @@ export default function HarcamaGrafigi({
               formatter={(value) => [formatTL(value), "Tutar"]}
               contentStyle={{
                 borderRadius: 12,
-                border: "1px solid #f1f5f9",
+                border: "1px solid var(--color-gray-100)",
+                backgroundColor: "var(--color-white)",
                 boxShadow: "0 8px 24px rgba(15,23,42,.08)",
                 fontSize: 12,
               }}
+              itemStyle={{ color: "var(--color-gray-800)" }}
             />
           </PieChart>
         </ResponsiveContainer>
