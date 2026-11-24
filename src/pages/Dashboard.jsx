@@ -4,6 +4,8 @@ import {
   getKullanicilar,
   saveKullanicilar,
   getDolarKuru,
+  getKayitliKur,
+  formatTarih,
   filtreleHarcamalar,
   periyotBasligi,
   ayBilgisi,
@@ -35,8 +37,11 @@ export default function Dashboard() {
   const [periyot, setPeriyot] = useState("aylik");
   // "aylik" periyotta görüntülenen ay: 0 = bu ay, -1 = geçen ay.
   const [ayOfseti, setAyOfseti] = useState(0);
-  const [kur, setKur] = useState(VARSAYILAN_KUR);
-  const [kurCanli, setKurCanli] = useState(false);
+  // Canlı kur gelene kadar (ya da gelmezse) en son saklanan kur kullanılır.
+  const [kayitliKur] = useState(getKayitliKur);
+  const [kur, setKur] = useState(kayitliKur?.kur ?? VARSAYILAN_KUR);
+  // "bekliyor" | "canli" | "kayitli" | "varsayilan"
+  const [kurDurumu, setKurDurumu] = useState("bekliyor");
   const [duzenlenen, setDuzenlenen] = useState(null);
   const [duzenlemeModu, setDuzenlemeModu] = useState(false);
   // İşlem listesine özel süzgeçler (özet ve grafikler periyodun tamamını gösterir).
@@ -51,15 +56,15 @@ export default function Dashboard() {
       .then((k) => {
         if (iptal) return;
         setKur(k);
-        setKurCanli(true);
+        setKurDurumu("canli");
       })
       .catch(() => {
-        if (!iptal) setKurCanli(false);
+        if (!iptal) setKurDurumu(kayitliKur ? "kayitli" : "varsayilan");
       });
     return () => {
       iptal = true;
     };
-  }, []);
+  }, [kayitliKur]);
 
   useEffect(() => {
     saveKullanicilar(kullanicilar);
@@ -255,6 +260,15 @@ export default function Dashboard() {
 
   const baslik = periyotBasligi(periyot, ayOfseti);
 
+  const kurAciklamasi = {
+    bekliyor: "Güncel kur alınıyor…",
+    canli: "Kur canlı olarak alındı",
+    kayitli: `Kur servisine ulaşılamadı; ${
+      kayitliKur?.zaman ? `${formatTarih(kayitliKur.zaman)} tarihli ` : ""
+    }son kur kullanılıyor`,
+    varsayilan: "Kur servisine ulaşılamadı, varsayılan kur kullanılıyor",
+  }[kurDurumu];
+
   const veriPaneli = (
     <VeriPaneli
       kullanicilar={kullanicilar}
@@ -280,11 +294,7 @@ export default function Dashboard() {
           </div>
           <div
             className="inline-flex items-center gap-2 self-start sm:self-auto px-3 py-2 rounded-full bg-gray-50 border border-gray-100 text-xs font-semibold text-gray-600"
-            title={
-              kurCanli
-                ? "Kur canlı olarak alındı"
-                : "Kur servisine ulaşılamadı, varsayılan kur kullanılıyor"
-            }
+            title={kurAciklamasi}
           >
             <LuCircleDollarSign size={14} className="text-green-500" />
             <span className="tabular-nums">
@@ -296,7 +306,11 @@ export default function Dashboard() {
             </span>
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                kurCanli ? "bg-green-500" : "bg-amber-400"
+                kurDurumu === "canli"
+                  ? "bg-green-500"
+                  : kurDurumu === "bekliyor"
+                    ? "bg-gray-300"
+                    : "bg-amber-400"
               }`}
             />
           </div>

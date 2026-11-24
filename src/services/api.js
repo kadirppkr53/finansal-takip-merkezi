@@ -15,14 +15,38 @@ export const saveKullanicilar = (kullanicilar) => {
 };
 
 // --- 2. DÖVİZ KURU ---
-export const VARSAYILAN_KUR = 32;
+// Yalnızca hiç kur alınamamışsa kullanılır (Kasım 2026 itibarıyla yaklaşık değer).
+export const VARSAYILAN_KUR = 50;
 
+const KUR_ANAHTARI = "sonKur";
+
+/** En son başarıyla alınan kur: { kur, zaman } ya da null. */
+export const getKayitliKur = () => {
+  try {
+    const veri = JSON.parse(localStorage.getItem(KUR_ANAHTARI));
+    const kur = Number(veri?.kur);
+    if (!Number.isFinite(kur) || kur <= 0) return null;
+    return { kur, zaman: typeof veri.zaman === "string" ? veri.zaman : null };
+  } catch {
+    return null;
+  }
+};
+
+/** Canlı kuru çeker; başarılıysa servis kesildiğinde kullanılmak üzere saklar. */
 export const getDolarKuru = async () => {
   const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
   if (!res.ok) throw new Error("Kur servisi yanıt vermedi.");
   const data = await res.json();
   const kur = Number(data?.rates?.TRY);
   if (!Number.isFinite(kur) || kur <= 0) throw new Error("Geçersiz kur.");
+  try {
+    localStorage.setItem(
+      KUR_ANAHTARI,
+      JSON.stringify({ kur, zaman: new Date().toISOString() }),
+    );
+  } catch {
+    // Depolama doluysa ya da kapalıysa kur yine de kullanılır.
+  }
   return kur;
 };
 
