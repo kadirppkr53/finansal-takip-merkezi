@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LuUserPlus, LuTrash2, LuUsers } from "react-icons/lu";
 import { formatTL } from "../services/api";
+import { gelirMi } from "../services/kategoriler";
 
 const basHarf = (ad = "") => ad.trim().charAt(0).toLocaleUpperCase("tr-TR");
 
@@ -58,7 +59,7 @@ export default function KullaniciPaneli({
           {kullanicilar.map((k) => {
             const secili = seciliId === k.id;
             const toplam = k.harcamalar.reduce(
-              (acc, h) => acc + (Number(h.tutar) || 0),
+              (acc, h) => (gelirMi(h) ? acc : acc + (Number(h.tutar) || 0)),
               0,
             );
             return (

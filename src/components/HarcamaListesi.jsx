@@ -1,6 +1,6 @@
 import { LuPencil, LuTrash2 } from "react-icons/lu";
 import { formatTL, formatUSD, formatTarih } from "../services/api";
-import { harcamaKategorisi } from "../services/kategoriler";
+import { harcamaKategorisi, gelirMi } from "../services/kategoriler";
 
 export default function HarcamaListesi({
   harcamalar,
@@ -14,7 +14,7 @@ export default function HarcamaListesi({
     return (
       <div className="text-center py-12 border-2 border-dashed border-gray-100 rounded-3xl">
         <p className="text-gray-400 text-sm">
-          Bu periyotta henüz bir harcama yok.
+          Bu periyotta henüz bir kayıt yok.
         </p>
       </div>
     );
@@ -24,6 +24,7 @@ export default function HarcamaListesi({
       {harcamalar.map((h, i) => {
         const kategori = harcamaKategorisi(h);
         const seciliMi = duzenlenenId === h.id;
+        const gelir = gelirMi(h);
         return (
           <li
             key={h.id}
@@ -54,7 +55,12 @@ export default function HarcamaListesi({
 
             <div className="flex items-center gap-4 shrink-0">
               <div className="text-right">
-                <div className="font-bold text-gray-900 tabular-nums">
+                <div
+                  className={`font-bold tabular-nums ${
+                    gelir ? "text-green-600" : "text-gray-900"
+                  }`}
+                >
+                  {gelir ? "+" : ""}
                   {formatTL(h.tutar)}
                 </div>
                 <div className="text-[11px] text-gray-400 font-medium tabular-nums">
@@ -68,7 +74,7 @@ export default function HarcamaListesi({
                     type="button"
                     onClick={() => onDuzenle(h)}
                     className="p-2 rounded-xl text-orange-500 bg-orange-50 hover:bg-orange-100 transition-colors cursor-pointer"
-                    aria-label={`${h.ad} harcamasını düzenle`}
+                    aria-label={`${h.ad} kaydını düzenle`}
                     title="Düzenle"
                   >
                     <LuPencil size={15} />
@@ -77,7 +83,7 @@ export default function HarcamaListesi({
                     type="button"
                     onClick={() => onSil(h.id)}
                     className="p-2 rounded-xl text-red-500 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
-                    aria-label={`${h.ad} harcamasını sil`}
+                    aria-label={`${h.ad} kaydını sil`}
                     title="Sil"
                   >
                     <LuTrash2 size={15} />

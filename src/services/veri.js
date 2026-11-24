@@ -1,4 +1,4 @@
-import { harcamaKategorisi } from "./kategoriler";
+import { harcamaKategorisi, gelirMi } from "./kategoriler";
 
 // --- YEDEKLEME (JSON) ---
 const UYGULAMA = "finansal-takip-merkezi";
@@ -40,6 +40,7 @@ const temizHarcama = (h, kimlik) => {
   const tarih = new Date(h.tarih);
   return {
     id: kimlik(h.id),
+    tur: h.tur === "gelir" ? "gelir" : "gider",
     ad,
     tutar,
     tarih: Number.isNaN(tarih.getTime())
@@ -105,11 +106,12 @@ const csvTarihi = (iso) => {
 };
 
 /** Türkçe Excel'in doğrudan açabildiği biçim: noktalı virgül ayırıcı, virgüllü ondalık. */
-export const csvOlustur = (harcamalar) =>
+export const csvOlustur = (kayitlar) =>
   [
-    ["Tarih", "Harcama", "Kategori", "Tutar (TL)"],
-    ...harcamalar.map((h) => [
+    ["Tarih", "Tür", "Ad", "Kategori", "Tutar (TL)"],
+    ...kayitlar.map((h) => [
       csvTarihi(h.tarih),
+      gelirMi(h) ? "Gelir" : "Gider",
       h.ad,
       harcamaKategorisi(h).label,
       (Number(h.tutar) || 0).toFixed(2).replace(".", ","),

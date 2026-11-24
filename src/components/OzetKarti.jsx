@@ -1,4 +1,10 @@
-import { LuHash, LuTrendingUp, LuArrowUpRight } from "react-icons/lu";
+import {
+  LuHash,
+  LuTrendingUp,
+  LuArrowUpRight,
+  LuArrowDownLeft,
+  LuScale,
+} from "react-icons/lu";
 import { formatTL, formatUSD } from "../services/api";
 import ButceDurumu from "./ButceDurumu";
 
@@ -20,6 +26,7 @@ export default function OzetKarti({
   kullaniciAdi,
   baslik,
   harcamalar,
+  gelirToplam = 0,
   kur,
   butce,
   buAyToplam,
@@ -50,7 +57,27 @@ export default function OzetKarti({
           ≈ {formatUSD(toplam / kur)}
         </p>
 
-        <div className="grid grid-cols-3 gap-2 md:gap-3 mt-6">
+        {/* Gelir girilmemişse bu satır hiç gösterilmez. */}
+        {gelirToplam > 0 && (
+          <div className="grid grid-cols-2 gap-2 md:gap-3 mt-6">
+            <MiniIstatistik
+              ikon={<LuArrowDownLeft size={12} />}
+              etiket="Gelir"
+              deger={`+${formatTL(gelirToplam)}`}
+            />
+            <MiniIstatistik
+              ikon={<LuScale size={12} />}
+              etiket={gelirToplam >= toplam ? "Kalan" : "Açık"}
+              deger={formatTL(Math.abs(gelirToplam - toplam))}
+            />
+          </div>
+        )}
+
+        <div
+          className={`grid grid-cols-3 gap-2 md:gap-3 ${
+            gelirToplam > 0 ? "mt-2 md:mt-3" : "mt-6"
+          }`}
+        >
           <MiniIstatistik
             ikon={<LuHash size={12} />}
             etiket="İşlem"

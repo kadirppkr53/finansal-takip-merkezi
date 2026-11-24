@@ -45,7 +45,7 @@ export default function VeriPaneli({
 
   const csvIndir = () => {
     const ad = [
-      "harcamalar",
+      "kayitlar",
       dosyaAdiParcasi(seciliKullanici.ad),
       dosyaAdiParcasi(periyotAdi),
       tarihInputDegeri(),

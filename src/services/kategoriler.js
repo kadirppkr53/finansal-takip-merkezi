@@ -14,6 +14,10 @@ import {
   LuGift,
   LuBriefcase,
   LuWallet,
+  LuBanknote,
+  LuHandCoins,
+  LuTrendingUp,
+  LuPiggyBank,
 } from "react-icons/lu";
 
 /**
@@ -198,17 +202,71 @@ export const DIGER_KATEGORI = {
   anahtarlar: [],
 };
 
-export const kategoriBul = (ad = "") => {
-  const kucuk = String(ad).toLocaleLowerCase("tr-TR");
-  return (
-    KATEGORILER.find((k) => k.anahtarlar.some((a) => kucuk.includes(a))) ||
-    DIGER_KATEGORI
-  );
+/** Gelir kayıtları için ayrı kategori kümesi. */
+export const GELIR_KATEGORILERI = [
+  {
+    id: "maas",
+    label: "Maaş",
+    Icon: LuBanknote,
+    renk: "#16a34a",
+    anahtarlar: ["maaş", "maas", "ücret", "prim", "ikramiye", "emekli"],
+  },
+  {
+    id: "ek-gelir",
+    label: "Ek Gelir",
+    Icon: LuHandCoins,
+    renk: "#0d9488",
+    anahtarlar: ["freelance", "serbest", "ek iş", "ek gelir", "proje", "satış"],
+  },
+  {
+    id: "yatirim",
+    label: "Yatırım",
+    Icon: LuTrendingUp,
+    renk: "#0284c7",
+    anahtarlar: ["yatırım", "faiz", "temettü", "kira geliri", "hisse", "altın"],
+  },
+  {
+    id: "burs",
+    label: "Burs & Harçlık",
+    Icon: LuGraduationCap,
+    renk: "#7c3aed",
+    anahtarlar: ["burs", "harçlık", "kyk"],
+  },
+];
+
+export const DIGER_GELIR = {
+  id: "diger-gelir",
+  label: "Diğer Gelir",
+  Icon: LuPiggyBank,
+  renk: "#10b981",
+  anahtarlar: [],
 };
 
 export const TUM_KATEGORILER = [...KATEGORILER, DIGER_KATEGORI];
+export const TUM_GELIR_KATEGORILERI = [...GELIR_KATEGORILERI, DIGER_GELIR];
+
+export const gelirMi = (kayit) => kayit?.tur === "gelir";
+
+/** Türe ("gider" | "gelir") göre seçilebilir kategoriler. */
+export const kategoriListesi = (tur) =>
+  tur === "gelir" ? TUM_GELIR_KATEGORILERI : TUM_KATEGORILER;
+
+export const kategoriBul = (ad = "", tur = "gider") => {
+  const kucuk = String(ad).toLocaleLowerCase("tr-TR");
+  const [liste, varsayilan] =
+    tur === "gelir"
+      ? [GELIR_KATEGORILERI, DIGER_GELIR]
+      : [KATEGORILER, DIGER_KATEGORI];
+  return (
+    liste.find((k) => k.anahtarlar.some((a) => kucuk.includes(a))) || varsayilan
+  );
+};
 
 /** Elle seçilmiş kategori varsa onu, yoksa addan tahmin edileni döndürür. */
-export const harcamaKategorisi = (harcama) =>
-  TUM_KATEGORILER.find((k) => k.id === harcama?.kategoriId) ??
-  kategoriBul(harcama?.ad);
+export const harcamaKategorisi = (kayit) => {
+  const tur = gelirMi(kayit) ? "gelir" : "gider";
+  return (
+    kategoriListesi(tur).find((k) => k.id === kayit?.kategoriId) ??
+    kategoriBul(kayit?.ad, tur)
+  );
+};

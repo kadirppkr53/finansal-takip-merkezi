@@ -8,13 +8,21 @@ import {
   tarihInputDegeri,
   tarihOlustur,
 } from "../services/api";
-import { TUM_KATEGORILER, kategoriBul } from "../services/kategoriler";
+import { kategoriListesi, kategoriBul } from "../services/kategoriler";
 
 const EN_ESKI_GUN = "2000-01-01";
+
+const TURLER = [
+  { id: "gider", label: "Gider", aktif: "bg-white text-blue-600 shadow-sm" },
+  { id: "gelir", label: "Gelir", aktif: "bg-white text-green-600 shadow-sm" },
+];
 
 export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
   // Not: Dashboard bu bileşeni `key={duzenlenen?.id}` ile render eder;
   // düzenlenen kayıt değişince form sıfırdan kurulur, effect içinde setState gerekmez.
+  const [tur, setTur] = useState(
+    duzenlenen?.tur === "gelir" ? "gelir" : "gider",
+  );
   const [ad, setAd] = useState(duzenlenen?.ad ?? "");
   const [tutar, setTutar] = useState(
     duzenlenen ? tutarGirdisi(duzenlenen.tutar) : "",
@@ -31,6 +39,13 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
     if (duzenlenen) adRef.current?.focus();
   }, [duzenlenen]);
 
+  const gelir = tur === "gelir";
+  const turDegistir = (yeni) => {
+    if (yeni === tur) return;
+    setTur(yeni);
+    setKategoriId(""); // kategoriler türe göre değişir
+  };
+
   const bugun = tarihInputDegeri();
   const gunGecerli = Boolean(gun) && gun >= EN_ESKI_GUN && gun <= bugun;
   const gecmisGun = !duzenlenen && gunGecerli && gun !== bugun;
@@ -46,7 +61,7 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
     const temizAd = ad.trim();
 
     if (!temizAd) {
-      setHata("Harcama adı boş olamaz.");
+      setHata(gelir ? "Gelir adı boş olamaz." : "Harcama adı boş olamaz.");
       adRef.current?.focus();
       return;
     }
@@ -62,12 +77,13 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
     }
 
     onKaydet({
+      tur,
       ad: temizAd,
       tutar: dolarMi ? deger * kur : deger,
       kategoriId: kategoriId || null,
       tarih: tarihOlustur(gun, duzenlenen?.tarih),
     });
-    // Tarih bilerek korunur: aynı güne ait harcamalar art arda girilebilir.
+    // Tarih ve tür bilerek korunur: aynı güne ait kayıtlar art arda girilebilir.
     setAd("");
     setTutar("");
     setKategoriId("");
@@ -80,11 +96,36 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
 
   return (
     <form onSubmit={handleSubmit} className="mb-6 w-full" noValidate>
+      <div
+        role="radiogroup"
+        aria-label="Kayıt türü"
+        className="inline-flex gap-1 p-1 mb-2 bg-gray-100 rounded-full"
+      >
+        {TURLER.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="radio"
+            aria-checked={tur === t.id}
+            onClick={() => turDegistir(t.id)}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer ${
+              tur === t.id ? t.aktif : "text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-wrap gap-2">
         <input
           ref={adRef}
           className={`flex-[2] min-w-[180px] ${inputSinifi}`}
-          placeholder="Harcama adı (örn: Market, Spor, Fatura)"
+          placeholder={
+            gelir
+              ? "Gelir adı (örn: Maaş, Burs, Ek iş)"
+              : "Harcama adı (örn: Market, Spor, Fatura)"
+          }
           value={ad}
           onChange={(e) => setAd(e.target.value)}
           onKeyDown={(e) => {
@@ -93,7 +134,7 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
               tutarRef.current?.focus();
             }
           }}
-          aria-label="Harcama adı"
+          aria-label={gelir ? "Gelir adı" : "Harcama adı"}
         />
         <input
           ref={tutarRef}
@@ -113,8 +154,8 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
           onChange={(e) => setKategoriId(e.target.value)}
           aria-label="Kategori"
         >
-          <option value="">Otomatik · {kategoriBul(ad).label}</option>
-          {TUM_KATEGORILER.map((k) => (
+          <option value="">Otomatik · {kategoriBul(ad, tur).label}</option>
+          {kategoriListesi(tur).map((k) => (
             <option key={k.id} value={k.id}>
               {k.label}
             </option>
@@ -130,14 +171,16 @@ export default function HarcamaFormu({ onKaydet, onIptal, duzenlenen, kur }) {
           min={EN_ESKI_GUN}
           max={bugun}
           onChange={(e) => setGun(e.target.value)}
-          aria-label="Harcama tarihi"
+          aria-label="Tarih"
         />
         <button
           type="submit"
           className={`flex items-center justify-center gap-2 min-w-[120px] px-5 py-3 rounded-2xl font-bold text-sm text-white transition-all cursor-pointer active:scale-[0.98] ${
             duzenlenen
               ? "bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-200"
-              : "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200"
+              : gelir
+                ? "bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200"
+                : "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200"
           }`}
         >
           {duzenlenen ? <LuCheck size={16} /> : <LuPlus size={16} />}

@@ -15,6 +15,7 @@ import FiltreBar from "../components/FiltreBar";
 import KullaniciPaneli from "../components/KullaniciPaneli";
 import OzetKarti from "../components/OzetKarti";
 import VeriPaneli from "../components/VeriPaneli";
+import { gelirMi } from "../services/kategoriler";
 
 export default function Dashboard() {
   const [kullanicilar, setKullanicilar] = useState(getKullanicilar);
@@ -80,15 +81,16 @@ export default function Dashboard() {
     if (seciliId === id) kullaniciSec(null);
   };
 
-  const harcamaKaydet = ({ ad, tutar, kategoriId, tarih }) => {
+  const harcamaKaydet = ({ tur, ad, tutar, kategoriId, tarih }) => {
+    const alanlar = { tur, ad, tutar, kategoriId, tarih };
     if (!seciliId) return;
     kullaniciGuncelle(seciliId, (k) => ({
       ...k,
       harcamalar: duzenlenen
         ? k.harcamalar.map((h) =>
-            h.id === duzenlenen.id ? { ...h, ad, tutar, kategoriId, tarih } : h,
+            h.id === duzenlenen.id ? { ...h, ...alanlar } : h,
           )
-        : [...k.harcamalar, { id: Date.now(), ad, tutar, kategoriId, tarih }],
+        : [...k.harcamalar, { id: Date.now(), ...alanlar }],
     }));
     setDuzenlenen(null);
   };
@@ -111,7 +113,8 @@ export default function Dashboard() {
     if (duzenlenen?.id === hId) setDuzenlenen(null);
   };
 
-  const gorunenHarcamalar = useMemo(
+  // Seçili periyottaki tüm kayıtlar (gelir + gider), yeniden eskiye.
+  const gorunenKayitlar = useMemo(
     () =>
       filtreleHarcamalar(seciliKullanici?.harcamalar, periyot)
         .slice()
@@ -119,11 +122,25 @@ export default function Dashboard() {
     [seciliKullanici, periyot],
   );
 
-  // Bütçe, seçili periyottan bağımsız olarak hep bu ayın harcamasıyla kıyaslanır.
+  const gorunenGiderler = useMemo(
+    () => gorunenKayitlar.filter((h) => !gelirMi(h)),
+    [gorunenKayitlar],
+  );
+
+  const gelirToplam = useMemo(
+    () =>
+      gorunenKayitlar.reduce(
+        (acc, h) => (gelirMi(h) ? acc + (Number(h.tutar) || 0) : acc),
+        0,
+      ),
+    [gorunenKayitlar],
+  );
+
+  // Bütçe, seçili periyottan bağımsız olarak hep bu ayın giderleriyle kıyaslanır.
   const buAyToplam = useMemo(
     () =>
       filtreleHarcamalar(seciliKullanici?.harcamalar, "aylik").reduce(
-        (acc, h) => acc + (Number(h.tutar) || 0),
+        (acc, h) => (gelirMi(h) ? acc : acc + (Number(h.tutar) || 0)),
         0,
       ),
     [seciliKullanici],
@@ -181,7 +198,7 @@ export default function Dashboard() {
             <VeriPaneli
               kullanicilar={kullanicilar}
               seciliKullanici={seciliKullanici}
-              gorunenHarcamalar={gorunenHarcamalar}
+              gorunenHarcamalar={gorunenKayitlar}
               periyotAdi={periyotBasligi(periyot)}
               onYedekYukle={yedekYukle}
             />
@@ -195,20 +212,21 @@ export default function Dashboard() {
                 key={seciliKullanici.id}
                 kullaniciAdi={seciliKullanici.ad}
                 baslik={periyotBasligi(periyot)}
-                harcamalar={gorunenHarcamalar}
+                harcamalar={gorunenGiderler}
+                gelirToplam={gelirToplam}
                 kur={kur}
                 butce={seciliKullanici.butce}
                 buAyToplam={buAyToplam}
                 onButceDegistir={butceGuncelle}
               />
 
-              {/* Harcamalar */}
+              {/* İşlemler (gelir + gider) */}
               <section className="bg-white p-5 md:p-8 rounded-[2rem] shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between gap-4 mb-5">
                   <div>
-                    <h3 className="font-bold text-gray-800">Harcamalar</h3>
+                    <h3 className="font-bold text-gray-800">İşlemler</h3>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {gorunenHarcamalar.length} kayıt ·{" "}
+                      {gorunenKayitlar.length} kayıt ·{" "}
                       {periyotBasligi(periyot)}
                     </p>
                   </div>
@@ -244,7 +262,7 @@ export default function Dashboard() {
                 )}
 
                 <HarcamaListesi
-                  harcamalar={gorunenHarcamalar}
+                  harcamalar={gorunenKayitlar}
                   onSil={harcamaSil}
                   onDuzenle={setDuzenlenen}
                   duzenlenenId={duzenlenen?.id}
@@ -264,7 +282,7 @@ export default function Dashboard() {
                   </div>
                   <FiltreBar aktifPeriyot={periyot} onDegistir={setPeriyot} />
                 </div>
-                <HarcamaGrafigi harcamalar={gorunenHarcamalar} />
+                <HarcamaGrafigi harcamalar={gorunenGiderler} />
               </section>
             </>
           ) : (
@@ -275,7 +293,7 @@ export default function Dashboard() {
                   : "Başlamak için soldan bir kullanıcı ekleyin."}
               </p>
               <p className="text-xs">
-                Her kullanıcının harcamaları ayrı ayrı takip edilir.
+                Her kullanıcının gelir ve giderleri ayrı ayrı takip edilir.
               </p>
             </div>
           )}
