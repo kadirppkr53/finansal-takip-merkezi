@@ -21,18 +21,30 @@
     <!-- Tema, sayfa çizilmeden önce uygulanır (açılışta beyaz parlama olmasın). -->
     <script>
       (function () {
+        // Tema listesi src/services/tema.js ile aynı olmalı: [tarayıcı rengi, koyu mu]
+        var TEMALAR = {
+          acik: ["#2563eb", false],
+          okyanus: ["#0f766e", false],
+          kahve: ["#8b5a34", false],
+          koyu: ["#0f172a", true],
+          gece: ["#000000", true],
+          ametist: ["#130f1f", true],
+        };
+        var tema = null;
         try {
-          var tema = localStorage.getItem("tema");
-          var koyu =
-            tema === "koyu" ||
-            (!tema && matchMedia("(prefers-color-scheme: dark)").matches);
-          if (koyu) {
-            document.documentElement.classList.add("dark");
-            document
-              .querySelector('meta[name="theme-color"]')
-              .setAttribute("content", "#0f172a");
-          }
+          tema = localStorage.getItem("tema");
         } catch (e) {}
+        // Kayıtlı (ve geçerli) bir seçim yoksa cihazın tercihi kullanılır.
+        if (!Object.prototype.hasOwnProperty.call(TEMALAR, tema))
+          tema = matchMedia("(prefers-color-scheme: dark)").matches
+            ? "koyu"
+            : "acik";
+        var kok = document.documentElement;
+        kok.dataset.tema = tema;
+        if (TEMALAR[tema][1]) kok.classList.add("dark");
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute("content", TEMALAR[tema][0]);
       })();
     </script>
   </head>

@@ -30,7 +30,7 @@ Uygulamanın güncel haline buradan ulaşabilirsiniz:
 **Veri ve kullanım**
 * **Yedekleme:** Tüm veriyi tek dosya olarak indir, başka bir cihazda ya da tarayıcıda geri yükle.
 * **Excel'e aktarma:** Görüntülenen kayıtları Excel'in doğrudan açtığı CSV dosyası olarak indir.
-* **Karanlık tema:** Tek tıkla açık/koyu tema; ilk açılışta cihazının tercihini kullanır.
+* **Temalar:** Üçü açık (Açık, Okyanus, Kahve), üçü koyu (Koyu, Gece Yarısı, Ametist) altı tema; ilk açılışta cihazının açık/koyu tercihini kullanır.
 * **Kurulabilir ve çevrimdışı:** Telefona ya da masaüstüne uygulama gibi kurulur, bir kez açıldıktan sonra internet olmadan da çalışır.
 * **Canlı dolar kuru:** Tutarların dolar karşılığı güncel kurla gösterilir; kur servisi yanıt vermezse son alınan kur kullanılır.
 
@@ -62,7 +62,7 @@ Projemiz, modern bir front-end geliştirme süreciyle inşa edilmiştir; sunucu 
 1. **Veri Saklama:** Tüm kayıtlar kullanıcının tarayıcısındaki `LocalStorage` üzerinde tutulur. Sayfayı yenilesen de verilerin kaybolmaz; kayıtların hiçbir sunucuya gönderilmez.
 2. **Bileşen Tabanlı Yapı:** Arayüz `React` bileşenlerine bölünmüştür. Hesaplama ve veri işleme mantığı bileşenlerden ayrı, `src/services/` altında saf fonksiyonlar olarak durur.
 3. **Dinamik Analiz:** Özet, grafikler ve liste, seçilen döneme göre anlık olarak yeniden hesaplanır.
-4. **Tema:** Karanlık tema, bileşenlere tek tek dokunmadan, renk değişkenlerinin `src/index.css` içindeki tek bir blokta koyu karşılıklarına çevrilmesiyle çalışır.
+4. **Temalar:** Bileşenler tema bilgisi taşımaz; her tema, renk değişkenlerini `src/index.css` içindeki kendi bloğunda değiştirir. Yeni bir tema eklemek, bir blok ve `src/services/tema.js` listesine bir satır eklemek demektir.
 5. **Çevrimdışı Çalışma:** `public/sw.js` içindeki service worker uygulamanın kendi dosyalarını önbelleğe alır; yeni sürüm yayınlandığında sayfa ağdan güncel haliyle gelir.
 
 ```
@@ -74,7 +74,7 @@ src/
     ├── kategoriler.js       Gelir/gider kategorileri ve addan tahmin
     ├── tekrar.js            Tekrarlayan kalemlerin işlenmesi
     ├── veri.js              Yedekleme ve CSV dışa aktarma
-    └── tema.js              Açık/koyu tema
+    └── tema.js              Tema listesi ve tema değiştirme
 ```
 
 ## 📈 Veri Akışı

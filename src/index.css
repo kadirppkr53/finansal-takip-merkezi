@@ -16,16 +16,29 @@ html {
 }
 
 /* ---------------------------------------------------------------------------
-   KARANLIK TEMA
-   Bileşenler tek tek `dark:` sınıfı taşımaz; Tailwind'in renk değişkenleri
-   burada koyu karşılıklarıyla değiştirilir. Zemin katmanları:
+   TEMALAR
+   Bileşenler tek tek tema sınıfı taşımaz; Tailwind'in renk değişkenleri burada
+   temaya göre değiştirilir. Tema <html data-tema="..."> ile seçilir; koyu
+   zeminli temalarda ayrıca "dark" sınıfı bulunur (bkz. services/tema.js).
+
+   Zemin katmanları:
      gray-50  -> sayfa zemini ve gömük alanlar (girdi kutuları)
      white    -> kartlar
      gray-100 -> kenarlıklar, çubuk zeminleri
-   Gri tonları tersine çevrilir: koyu griler açık yazı rengine dönüşür.
+   Vurgu rengi: arayüz her yerde "blue" tonlarını kullanır; bir tema vurguyu
+   değiştirmek için blue-50/100/200/400/600/700 ve (özet kartı geçişinin sonu
+   olan) indigo-700 değişkenlerini kendi rengiyle doldurur.
    --------------------------------------------------------------------------- */
+
+/* --- Koyu temaların ortak tabanı (aynı zamanda "Koyu" temanın kendisi) ---
+   Gri tonları tersine çevrilir: koyu griler açık yazı rengine dönüşür. */
 .dark {
   color-scheme: dark;
+
+  /* Renkli zeminlerin üstündeki açık vurgu tonları ve koyu zemindeki vurgu yazısı. */
+  --vurgu-50-acik: #eff6ff;
+  --vurgu-100-acik: #dbeafe;
+  --vurgu-yazi: #60a5fa;
 
   --color-white: #1e293b;
   --color-gray-50: #0f172a;
@@ -49,20 +62,100 @@ html {
   --color-amber-50: rgb(245 158 11 / 0.14);
 }
 
-/* Renkli zeminli öğeler (mavi özet kartı, dolu düğmeler) her temada aynı kalır:
-   üzerlerindeki beyaz ve açık mavi tonlar geri yüklenir. */
+/* --- Gece Yarısı: tam siyah zemin (OLED ekranlar için), mavi vurgu --- */
+[data-tema="gece"] {
+  --color-white: #111113;
+  --color-gray-50: #000000;
+  --color-gray-100: #26262b;
+  --color-gray-200: #3a3a41;
+  --color-gray-300: #686872;
+  --color-gray-400: #9a9aa6;
+  --color-gray-500: #b0b0bb;
+  --color-gray-600: #cfcfd6;
+  --color-gray-700: #e3e3e8;
+  --color-gray-800: #f1f1f4;
+  --color-gray-900: #fafafa;
+}
+
+/* --- Ametist: mor tonlu koyu zemin, menekşe vurgu --- */
+[data-tema="ametist"] {
+  --color-white: #1e1830;
+  --color-gray-50: #130f1f;
+  --color-gray-100: #332a4d;
+  --color-gray-200: #473d66;
+  --color-gray-300: #6b6190;
+  --color-gray-400: #a39bc2;
+  --color-gray-500: #b6afd2;
+  --color-gray-600: #cdc8e3;
+  --color-gray-700: #e2def0;
+  --color-gray-800: #f0eef8;
+  --color-gray-900: #f8f7fc;
+
+  --color-blue-50: rgb(139 92 246 / 0.16);
+  --color-blue-100: rgb(139 92 246 / 0.3);
+  --color-blue-200: #c4b5fd;
+  --color-blue-400: #a78bfa;
+  --color-blue-600: #7c3aed;
+  --color-blue-700: #6d28d9;
+  --color-indigo-700: #a21caf;
+
+  --vurgu-50-acik: #f5f3ff;
+  --vurgu-100-acik: #ede9fe;
+  --vurgu-yazi: #a78bfa;
+}
+
+/* --- Okyanus: serin açık zemin, deniz yeşili vurgu --- */
+[data-tema="okyanus"] {
+  --color-gray-50: #eef6f7;
+  --color-gray-100: #dcebed;
+  --color-gray-200: #c6dcdf;
+
+  --color-blue-50: #f0fdfa;
+  --color-blue-100: #ccfbf1;
+  --color-blue-200: #99f6e4;
+  --color-blue-400: #2dd4bf;
+  --color-blue-600: #0f766e;
+  --color-blue-700: #115e59;
+  --color-indigo-700: #155e75;
+}
+
+/* --- Kahve: sıcak krem zemin, kahverengi vurgu --- */
+[data-tema="kahve"] {
+  --color-white: #fffdfa;
+  --color-gray-50: #f8f2e9;
+  --color-gray-100: #efe4d5;
+  --color-gray-200: #e0d0bb;
+  --color-gray-300: #d0c4b6;
+  --color-gray-400: #a8a29e;
+  --color-gray-500: #78716c;
+  --color-gray-600: #57534e;
+  --color-gray-700: #44403c;
+  --color-gray-800: #292524;
+  --color-gray-900: #1c1917;
+
+  --color-blue-50: #fbf3ea;
+  --color-blue-100: #f3e2cf;
+  --color-blue-200: #e6c9a8;
+  --color-blue-400: #c08a5a;
+  --color-blue-600: #8b5a34;
+  --color-blue-700: #6f4526;
+  --color-indigo-700: #7a3e2b;
+}
+
+/* Renkli zeminli öğeler (özet kartı, dolu düğmeler) koyu temalarda da aynı kalır:
+   üzerlerindeki beyaz ve açık vurgu tonları geri yüklenir. */
 .dark .tema-sabit,
 .dark .bg-blue-600,
 .dark .bg-green-600,
 .dark .bg-orange-500 {
   --color-white: #fff;
-  --color-blue-50: #eff6ff;
-  --color-blue-100: #dbeafe;
+  --color-blue-50: var(--vurgu-50-acik);
+  --color-blue-100: var(--vurgu-100-acik);
 }
 
 /* Koyu zeminde okunaklı kalması için vurgu yazıları bir ton açılır. */
 .dark .text-blue-600 {
-  color: #60a5fa;
+  color: var(--vurgu-yazi);
 }
 
 .dark .text-green-600 {

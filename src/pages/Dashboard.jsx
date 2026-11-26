@@ -3,8 +3,6 @@ import {
   LuCircleDollarSign,
   LuPencil,
   LuCheck,
-  LuSun,
-  LuMoon,
 } from "react-icons/lu";
 import {
   getKullanicilar,
@@ -31,7 +29,8 @@ import TekrarListesi from "../components/TekrarListesi";
 import ListeFiltresi from "../components/ListeFiltresi";
 import { gelirMi, harcamaKategorisi } from "../services/kategoriler";
 import { tekrarOlustur, tekrarlariIsle } from "../services/tekrar";
-import { koyuTemaAcik, temaUygula } from "../services/tema";
+import TemaSecici from "../components/TemaSecici";
+import { etkinTema, temaUygula } from "../services/tema";
 
 export default function Dashboard() {
   // Açılışta günü gelmiş tekrarlayan kalemler kayda dönüştürülür.
@@ -55,12 +54,9 @@ export default function Dashboard() {
   const [arama, setArama] = useState("");
   const [kategoriFiltre, setKategoriFiltre] = useState("");
   const islemlerRef = useRef(null);
-  const [koyuTema, setKoyuTema] = useState(koyuTemaAcik);
+  const [tema, setTema] = useState(etkinTema);
 
-  const temaDegistir = () => {
-    temaUygula(!koyuTema);
-    setKoyuTema(!koyuTema);
-  };
+  const temaDegistir = (id) => setTema(temaUygula(id));
 
   // Dolar kuru tek bir yerden, bir kez çekilir.
   useEffect(() => {
@@ -305,7 +301,7 @@ export default function Dashboard() {
               Bütçeni kontrol altında tut.
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="relative flex items-center gap-2 self-start sm:self-auto">
           <div
             className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-50 border border-gray-100 text-xs font-semibold text-gray-600"
             title={kurAciklamasi}
@@ -328,15 +324,7 @@ export default function Dashboard() {
               }`}
             />
           </div>
-          <button
-            type="button"
-            onClick={temaDegistir}
-            className="p-2 rounded-full bg-gray-50 border border-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer"
-            aria-label={koyuTema ? "Açık temaya geç" : "Koyu temaya geç"}
-            title={koyuTema ? "Açık temaya geç" : "Koyu temaya geç"}
-          >
-            {koyuTema ? <LuSun size={15} /> : <LuMoon size={15} />}
-          </button>
+          <TemaSecici tema={tema} onSec={temaDegistir} />
           </div>
         </div>
       </header>
